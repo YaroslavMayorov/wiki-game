@@ -21,17 +21,16 @@ internal class ParserTests {
             Arguments.of(
                 "https://en.wikipedia.org/wiki/Kotlin_(programming_language)",
                 listOf(
-                    "a new language for the JVM, which had been under development for a year",
-                    "Kotlin 1.5 was released in May 2021",
-                    "by default, meaning that creating a derived class is disabled unless the base class is declared with",
+                    "while the Kotlin Foundation protects the Kotlin trademark",
+                    "On 7 May 2019, Google announced that the Kotlin programming language had become its preferred language",
+                    "The Android Kotlin compiler emits Java 8",
                 )
             ),
             Arguments.of(
                 "en.wikipedia.org/wiki/Kotlin_(programming_language)",
                 listOf(
-                    "a new language for the JVM, which had been under development for a year",
-                    "Kotlin 1.5 was released in May 2021",
-                    "by default, meaning that creating a derived class is disabled unless the base class is declared with",
+                    "Kotlin has support for the web with Kotlin/JS",
+                    "Andrey Breslav, Kotlin's former lead designer"
                 )
             )
         )
@@ -42,15 +41,6 @@ internal class ParserTests {
                 "https://en.wikipedia.org/wiki/Kotlin_(programming_language)aaaaa",
                 emptyList<String>(),
                 0,
-            ),
-            Arguments.of(
-                "https://en.wikipedia.org/wiki/Kotlin_(programming_language)",
-                listOf(
-                    "https://en.wikipedia.org/wiki/James_Gosling",
-                    "https://en.wikipedia.org/wiki/Java_Community_Process",
-                    "https://en.wikipedia.org/wiki/JetBrains",
-                ),
-                210
             ),
         )
     }

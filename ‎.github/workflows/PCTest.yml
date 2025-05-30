@@ -1,0 +1,57 @@
+name: PCTest
+
+on: [pull_request]
+
+jobs:
+  detekt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: liberica
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v3
+      - uses: gradle/gradle-build-action@v3
+        with:
+          arguments: detekt --stacktrace
+
+  diktat:
+    needs: detekt
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: liberica
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v3
+      - uses: gradle/gradle-build-action@v3
+        with:
+          arguments: diktat --stacktrace
+
+  tests:
+    needs: diktat
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: liberica
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v3
+      - uses: gradle/gradle-build-action@v3
+        with:
+          arguments: test --stacktrace
