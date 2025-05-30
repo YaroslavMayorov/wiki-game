@@ -37,20 +37,20 @@ class PageSearch(
         if (startPage == finalPage) return@runBlocking SearchPath(0, listOf(finalPage))
 
         val dispatcher = newFixedThreadPoolContext(threadsCount, "MyPool")
-        val visited = ConcurrentHashMap.newKeySet<String>()
+        val visitedPageUrls = ConcurrentHashMap.newKeySet<String>()
         val currentLevel = PageQueue()
         currentLevel.add(startPage to listOf(startPage))
         val nextLevel = PageQueue()
-        val foundPath = PathRef(null)
+        val shortestUrlPathToTarget = PathRef(null)
 
         processLevels(
             currentLevel = currentLevel,
             nextLevel = nextLevel,
-            context = SearchContext(visited, foundPath, dispatcher, searchDepth)
+            context = SearchContext(visitedPageUrls, shortestUrlPathToTarget, dispatcher, searchDepth)
         )
 
         dispatcher.close()
-        buildResult(foundPath)
+        buildResult(shortestUrlPathToTarget)
     }
 
     private suspend fun processLevels(
@@ -59,35 +59,68 @@ class PageSearch(
         context: SearchContext
     ) {
         for (depth in 0 until context.searchDepth) {
-            coroutineScope {
-                for ((page, path) in currentLevel) {
-                    launch(context.dispatcher) {
-                        context.foundPath.get()?.let {
-                            return@launch
-                        }
-                        println("***Visiting: $page***")
-                        val doc = getHtmlDocument(page)
-                        val links = extractReferences(doc)
-                        for (link in links) {
-                            context.foundPath.get()?.let {
-                                return@launch
-                            }
-                            if (!context.visited.add(link)) continue
-                            val newPath = path + link
-                            if (link == finalPage) {
-                                context.foundPath.compareAndSet(null, newPath)
-                                return@launch
-                            }
-                            if (depth + 1 < context.searchDepth) {
-                                nextLevel.add(link to newPath)
-                            }
-                        }
-                    }
-                }
-            }
+            context.foundPath.get()?.let { return }
+            processCurrentLevel(depth, currentLevel, nextLevel, context)
             currentLevel.clear()
             currentLevel.addAll(nextLevel)
             nextLevel.clear()
+        }
+    }
+
+    private suspend fun processCurrentLevel(
+        depth: Int,
+        currentLevel: PageQueue,
+        nextLevel: PageQueue,
+        context: SearchContext
+    ) = coroutineScope {
+        for ((page, path) in currentLevel) {
+            launch(context.dispatcher) {
+                context.foundPath.get() ?: processPage(
+                    page,
+                    path,
+                    depth,
+                    nextLevel,
+                    context
+                )
+            }
+        }
+    }
+
+    private fun processPage(
+        page: String,
+        path: List<String>,
+        depth: Int,
+        nextLevel: PageQueue,
+        context: SearchContext
+    ) {
+        val doc = getHtmlDocument(page)
+        val links = extractReferences(doc)
+        for (link in links) {
+            context.foundPath.get()?.let {
+                return
+            }
+            processLink(link, path, depth, nextLevel, context)
+        }
+    }
+
+    private fun processLink(
+        link: String,
+        path: List<String>,
+        depth: Int,
+        nextLevel: PageQueue,
+        context: SearchContext
+    ) {
+        if (!context.visited.add(link)) return
+
+        val newPath = path + link
+
+        if (link == finalPage) {
+            context.foundPath.compareAndSet(null, newPath)
+            return
+        }
+
+        if (depth + 1 < context.searchDepth) {
+            nextLevel.add(link to newPath)
         }
     }
 

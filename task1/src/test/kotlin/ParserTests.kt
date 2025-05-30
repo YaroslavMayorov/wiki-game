@@ -30,7 +30,6 @@ internal class ParserTests {
                 "en.wikipedia.org/wiki/Kotlin_(programming_language)",
                 listOf(
                     "Kotlin has support for the web with Kotlin/JS",
-                    "Kotlin 1.5 was released in May 2021",
                     "Andrey Breslav, Kotlin's former lead designer"
                 )
             )

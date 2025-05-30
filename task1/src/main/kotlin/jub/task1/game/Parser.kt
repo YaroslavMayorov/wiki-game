@@ -20,7 +20,8 @@ private val forbiddenTemplates = listOf(
     "Module:",
     "Media:",
     "Template_talk:",
-    "Talk:"
+    "Talk:",
+    "Main_Page"
 )
 
 @Suppress("TooGenericExceptionCaught", "SwallowedException")
